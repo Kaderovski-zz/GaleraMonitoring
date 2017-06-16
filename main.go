@@ -33,6 +33,7 @@ func main() {
 	}
 
 	// Get MariaDB version
+	fmt.Print("### Version ####\n")
 	for srvName, db := range dbList {
 		version, err := galera.GetVersion(db)
 		if err != nil {
@@ -43,7 +44,7 @@ func main() {
 
 	// Get Cluster State UUID
 	muid := map[string]string{}
-
+	fmt.Print("### UUID ###\n")
 	for srvName, db := range dbList {
 		_, uid, err := galera.GetClusterStateUUID(db)
 		if err != nil {
@@ -60,11 +61,12 @@ func main() {
 	}
 
 	// Get Total Nodes in map cnx
+	fmt.Print("### Nodes ###\n")
 	nbSrv, err := numberNodes(cnx)
 	if err != nil {
 		log.Fatalf("Impossible to count total nodes %s", err)
 	}
-	log.Printf("Total Nodes : %v", nbSrv)
+	log.Printf("Total Nodes : %v", nbSrv)
 
 	mTotalNodes := map[string]int{}
 
@@ -85,8 +87,9 @@ func main() {
 		fmt.Printf("Nodes count mismatched %s", err)
 	}
 
-	mStatusNodes := map[string]string{}
 	// Get Cluster Status
+	fmt.Print("### STATUS ###\n")
+	mStatusNodes := map[string]string{}
 	for srvName, db := range dbList {
 		_, status, err := galera.GetClusterStatus(db)
 		if err != nil {
@@ -140,6 +143,7 @@ func main() {
 	}
 
 	// Get wsrep_local_recv_queue_avg
+	fmt.Print("### Average Replication ###\n")
 	for srvName, db := range dbList {
 		_, values, err := galera.GetQueueAvg(db)
 		if err != nil {
