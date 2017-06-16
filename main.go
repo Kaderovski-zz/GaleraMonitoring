@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/F00b4rch/Galera_Monitoring/controller"
-	"github.com/F00b4rch/SandBox/golang/GaleraMonitoring/galera"
+	"github.com/F00b4rch/Galera_Monitoring/galera"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -101,6 +101,18 @@ func main() {
 	err = controller.CheckClusterStatus(mStatusNodes)
 	if err != nil {
 		fmt.Printf("Nodes are not Primary %v", err)
+	}
+
+	mNodesReady := map[string]string{}
+	// Get Nodes wsrep_ready
+	for srvName, db := range dbList {
+		_, values, err := galera.GetReady(db)
+		if err != nil {
+			log.Fatalf("Impossible to get Nodes wsrep_ready %s", err)
+		} else {
+			log.Printf("%v is %v", srvName, values)
+		}
+		mNodesReady[srvName] = values
 	}
 }
 
