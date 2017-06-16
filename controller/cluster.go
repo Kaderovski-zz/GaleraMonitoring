@@ -1,21 +1,23 @@
 package controller
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // CheckClusterStatus verify if Nodes are Primary
-func CheckClusterStatus(mapStatus map[string]string) error {
+func CheckClusterStatus(mapStatus map[string]string) (err error) {
 
-	normalStatus := "Primary"
+	const normalStatus = "Primary"
 
 	for serverName, status := range mapStatus {
 		if status == normalStatus {
 			continue
 		}
 
-		return fmt.Errorf("Nodes status not primary on %s", serverName)
+		err = fmt.Errorf("Nodes status not primary on %s : %v", serverName, status)
 
 	}
-	return nil
+	return err
 }
 
 // CheckON verify if all nodes answer OK to wsrep_ready
@@ -27,9 +29,9 @@ func CheckON(mapNodes map[string]string) (err error) {
 		if values == ready {
 			continue
 		}
-		err = fmt.Errorf("%v is not ready %v", srvName, err)
+		err = fmt.Errorf("%v is not ready %v", srvName, values)
 	}
-	return nil
+	return err
 }
 
 // CheckUID verify if all Nodes uuid are the same

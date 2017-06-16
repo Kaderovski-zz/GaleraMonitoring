@@ -100,7 +100,7 @@ func main() {
 	// Check if status is != Primary
 	err = controller.CheckClusterStatus(mStatusNodes)
 	if err != nil {
-		fmt.Printf("Nodes are not Primary %v", err)
+		fmt.Print(err)
 	}
 
 	mNodesReady := map[string]string{}
@@ -113,6 +113,12 @@ func main() {
 			log.Printf("%v is %v", srvName, values)
 		}
 		mNodesReady[srvName] = values
+	}
+
+	// Check if wsrep_ready is ON
+	err = controller.CheckON(mNodesReady)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
