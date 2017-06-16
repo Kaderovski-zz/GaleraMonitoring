@@ -121,8 +121,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	mNodesCon := map[string]string{}
 	// Get Nodes wsrep_connected
+	mNodesCon := map[string]string{}
 	for srvName, db := range dbList {
 		_, values, err := galera.GetConnected(db)
 		if err != nil {
@@ -137,6 +137,16 @@ func main() {
 	err = controller.CheckConnected(mNodesCon)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// Get wsrep_local_recv_queue_avg
+	for srvName, db := range dbList {
+		_, values, err := galera.GetQueueAvg(db)
+		if err != nil {
+			log.Fatalf("Impossible to get average replication %s", err)
+		} else {
+			log.Printf("Average on %v : %v", srvName, string(values))
+		}
 	}
 
 }
