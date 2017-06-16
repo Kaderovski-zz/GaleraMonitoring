@@ -110,7 +110,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Impossible to get Nodes wsrep_ready %s", err)
 		} else {
-			log.Printf("%v is %v", srvName, values)
+			log.Printf("%v is ready : [%v]", srvName, values)
 		}
 		mNodesReady[srvName] = values
 	}
@@ -120,6 +120,25 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	mNodesCon := map[string]string{}
+	// Get Nodes wsrep_connected
+	for srvName, db := range dbList {
+		_, values, err := galera.GetConnected(db)
+		if err != nil {
+			log.Fatalf("Impossible to get Nodes wsrep_connected %s", err)
+		} else {
+			log.Printf("%v is connected : [%v]", srvName, values)
+		}
+		mNodesCon[srvName] = values
+	}
+
+	// Check if wsrep_connected is ON
+	err = controller.CheckConnected(mNodesCon)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 func numberNodes(nodes map[string]string) (totalsrv int, err error) {

@@ -20,20 +20,6 @@ func CheckClusterStatus(mapStatus map[string]string) (err error) {
 	return err
 }
 
-// CheckON verify if all nodes answer OK to wsrep_ready
-func CheckON(mapNodes map[string]string) (err error) {
-
-	const ready = "ON"
-
-	for srvName, values := range mapNodes {
-		if values == ready {
-			continue
-		}
-		err = fmt.Errorf("%v is not ready %v", srvName, values)
-	}
-	return err
-}
-
 // CheckUID verify if all Nodes uuid are the same
 func CheckUID(uids map[string]string) error {
 
