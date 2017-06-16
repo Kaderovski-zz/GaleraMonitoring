@@ -6,6 +6,7 @@ import (
 
 	"fmt"
 
+	"github.com/F00b4rch/Galera_Monitoring/controller"
 	"github.com/F00b4rch/SandBox/golang/GaleraMonitoring/galera"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -53,7 +54,7 @@ func main() {
 	}
 
 	// Check UUID
-	err := checkUID(muid)
+	err := controller.CheckUID(muid)
 	if err != nil {
 		log.Fatalf("%s : %v", err, muid)
 	}
@@ -79,7 +80,7 @@ func main() {
 	}
 
 	// Diff between count nodes connexion and get nodes SQL
-	err = checkNodesCount(mTotalNodes, nbSrv)
+	err = controller.CheckNodesCount(mTotalNodes, nbSrv)
 	if err != nil {
 		fmt.Printf("Nodes count mismatched %s", err)
 	}
@@ -97,61 +98,14 @@ func main() {
 	}
 
 	// Check if status is != Primary
-	err = checkClusterStatus(mStatusNodes)
+	err = controller.CheckClusterStatus(mStatusNodes)
 	if err != nil {
 		fmt.Printf("Nodes are not Primary %v", err)
 	}
-}
-
-func checkUID(uids map[string]string) error {
-
-	lastUID := ""
-
-	for srv, uid := range uids {
-		if lastUID == "" {
-			lastUID = uid
-			continue
-		}
-		if lastUID == uid {
-			continue
-		}
-		return fmt.Errorf("uid : %s of %s does not match", uid, srv)
-	}
-
-	return nil
-
 }
 
 func numberNodes(nodes map[string]string) (totalsrv int, err error) {
 
 	totalsrv = len(nodes)
 	return
-}
-
-func checkNodesCount(mapNodes map[string]int, totalNodes int) error {
-
-	for _, numb := range mapNodes {
-		if numb == totalNodes {
-			continue
-		}
-		return fmt.Errorf("Number of connected Nodes is not the same, total = %v found = %v", totalNodes, numb)
-	}
-
-	return nil
-
-}
-
-func checkClusterStatus(mapStatus map[string]string) error {
-
-	normalStatus := "Primary"
-
-	for serverName, status := range mapStatus {
-		if status == normalStatus {
-			continue
-		}
-
-		return fmt.Errorf("Nodes status not primary on %s", serverName)
-
-	}
-	return nil
 }
