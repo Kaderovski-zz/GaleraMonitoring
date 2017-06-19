@@ -3,12 +3,14 @@ package main
 import (
 	"database/sql"
 	"log"
+	"encoding/binary"
 
 	"fmt"
 
 	"github.com/F00b4rch/Galera_Monitoring/controller"
 	"github.com/F00b4rch/Galera_Monitoring/galera"
 	_ "github.com/go-sql-driver/mysql"
+	"math"
 )
 
 func main() {
@@ -32,6 +34,7 @@ func main() {
 		dbList[key] = db
 	}
 
+	/*
 	// Get MariaDB version
 	fmt.Print("### Version ####\n")
 	for srvName, db := range dbList {
@@ -41,17 +44,18 @@ func main() {
 		}
 		log.Printf("Serveur %s - version %s", srvName, version)
 	}
+	*/
 
 	// Get Cluster State UUID
 	muid := map[string]string{}
-	fmt.Print("### UUID ###\n")
 	for srvName, db := range dbList {
 		_, uid, err := galera.GetClusterStateUUID(db)
 		if err != nil {
+			fmt.Print("### [FATAL] UUID ###\n")
 			log.Fatalf("Impossible to get uid %v", err)
 		}
 		muid[srvName] = uid
-		log.Printf("%s %s", srvName, uid)
+		//log.Printf("%s %s", srvName, uid)
 	}
 
 	// Check UUID
@@ -61,12 +65,12 @@ func main() {
 	}
 
 	// Get Total Nodes in map cnx
-	fmt.Print("### Nodes ###\n")
 	nbSrv, err := numberNodes(cnx)
 	if err != nil {
+		fmt.Print("### [FATAL] Nodes ###\n")
 		log.Fatalf("Impossible to count total nodes %s", err)
 	}
-	log.Printf("Total Nodes : %v", nbSrv)
+	//log.Printf("Total Nodes : %v", nbSrv)
 
 	mTotalNodes := map[string]int{}
 
@@ -74,29 +78,33 @@ func main() {
 	for srvName, db := range dbList {
 		_, numb, err := galera.GetNumbNodes(db)
 		if err != nil {
+			fmt.Print("### [FATAL] Nodes ###\n")
 			log.Fatalf("Impossible to get total nodes %v total Nodes = %v Nodes get = %v", err, nbSrv, numb)
-		} else {
-			log.Printf("Number of Nodes counts : %v", numb)
 		}
+		/*else {
+			log.Printf("Number of Nodes counts : %v", numb)
+		}*/
 		mTotalNodes[srvName] = numb
 	}
 
 	// Diff between count nodes connexion and get nodes SQL
 	err = controller.CheckNodesCount(mTotalNodes, nbSrv)
 	if err != nil {
+		fmt.Print("### [FATAL] Nodes ###\n")
 		fmt.Printf("Nodes count mismatched %s", err)
 	}
 
 	// Get Cluster Status
-	fmt.Print("### STATUS ###\n")
 	mStatusNodes := map[string]string{}
 	for srvName, db := range dbList {
 		_, status, err := galera.GetClusterStatus(db)
 		if err != nil {
+			fmt.Print("### [FATAL] STATUS ###\n")
 			log.Fatalf("Impossible to get cluster status %s", err)
-		} else {
-			log.Printf("%v status : %v", srvName, status)
 		}
+		/*else {
+			log.Printf("%v status : %v", srvName, status)
+		}*/
 		mStatusNodes[srvName] = status
 	}
 
@@ -111,10 +119,12 @@ func main() {
 	for srvName, db := range dbList {
 		_, values, err := galera.GetReady(db)
 		if err != nil {
+			fmt.Print("### [FATAL] Nodes ###\n")
 			log.Fatalf("Impossible to get Nodes wsrep_ready %s", err)
-		} else {
-			log.Printf("%v is ready : [%v]", srvName, values)
 		}
+		/*else {
+			log.Printf("%v is ready : [%v]", srvName, values)
+		}*/
 		mNodesReady[srvName] = values
 	}
 
@@ -129,10 +139,12 @@ func main() {
 	for srvName, db := range dbList {
 		_, values, err := galera.GetConnected(db)
 		if err != nil {
+			log.Print("### [FATAL] Nodes ###\n")
 			log.Fatalf("Impossible to get Nodes wsrep_connected %s", err)
-		} else {
-			log.Printf("%v is connected : [%v]", srvName, values)
 		}
+		/*else {
+			log.Printf("%v is connected : [%v]", srvName, values)
+		}*/
 		mNodesCon[srvName] = values
 	}
 
@@ -143,12 +155,13 @@ func main() {
 	}
 
 	// Get wsrep_local_recv_queue_avg
-	fmt.Print("### Average Replication ###\n")
 	for srvName, db := range dbList {
 		_, values, err := galera.GetQueueAvg(db)
 		if err != nil {
 			log.Fatalf("Impossible to get average replication %s", err)
-		} else {
+		}
+		if Float64frombytes(values) >= 0.100000 {
+			fmt.Print("### [WARNING] Average Replication ###\n")
 			log.Printf("Average on %v : %v", srvName, string(values))
 		}
 	}
@@ -159,4 +172,10 @@ func numberNodes(nodes map[string]string) (totalsrv int, err error) {
 
 	totalsrv = len(nodes)
 	return
+}
+
+func Float64frombytes(bytes []byte) float64 {
+	bits := binary.LittleEndian.Uint64(bytes)
+	float := math.Float64frombits(bits)
+	return float
 }
