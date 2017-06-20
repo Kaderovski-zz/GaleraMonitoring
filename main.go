@@ -5,9 +5,9 @@ import (
 	"log"
 	"encoding/binary"
 	//"fmt"
-	"github.com/F00b4rch/Galera_Monitoring/controller"
-	"github.com/F00b4rch/Galera_Monitoring/galera"
-	"github.com/F00b4rch/Galera_Monitoring/slackApp"
+	"github.com/F00b4rch/GaleraMonitoring/controller"
+	"github.com/F00b4rch/GaleraMonitoring/galera"
+	"github.com/F00b4rch/GaleraMonitoring/slackApp"
 	_ "github.com/go-sql-driver/mysql"
 	"math"
 
