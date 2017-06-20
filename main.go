@@ -17,7 +17,7 @@ func main() {
 
 	// Define here your nodes connexions settings
 	cnx := map[string]string{
-		"n1": "root:@(172.17.0.2:3306)/",
+		"n1": "root:@(172.17.0.2:3307)/",
 		"n2": "root:@(172.17.0.3:3306)/",
 		"n3": "root:@(172.17.0.4:3306)/",
 	}
@@ -29,6 +29,7 @@ func main() {
 		db, err := sql.Open("mysql", con)
 		if err != nil {
 			slackApp.PayloadSlack("\n### [ERROR] ###\n Can't connect to galera Nodes" + err.Error())
+			log.Fatalf("Can't connect to galera Nodes %v", err)
 		}
 		defer db.Close()
 		dbList[key] = db
@@ -41,6 +42,7 @@ func main() {
 		_, err := galera.GetVersion(db)
 		if err != nil {
 			slackApp.PayloadSlack("\n### [WARNING] ###\nImpossible to get version" + err.Error())
+			log.Printf("Impossible to get version", err)
 		}
 		//log.Printf("Serveur %s - version %s", srvName, version)
 	}
@@ -53,6 +55,7 @@ func main() {
 		_, uid, err := galera.GetClusterStateUUID(db)
 		if err != nil {
 			slackApp.PayloadSlack("\n### [FATAL] UUID ###\nImpossible to get uid " + err.Error())
+			log.Fatalf("Impossible to get uuid %v", err)
 		}
 		muid[srvName] = uid
 		//log.Printf("%s %s", srvName, uid)
@@ -69,6 +72,7 @@ func main() {
 	nbSrv, err := numberNodes(cnx)
 	if err != nil {
 		slackApp.PayloadSlack("\n### [FATAL] Nodes ###\nImpossible to count total nodes " + err.Error())
+		log.Fatalf("Impossible to count total nodes %v", err)
 	}
 	//log.Printf("Total Nodes : %v", nbSrv)
 
@@ -79,6 +83,7 @@ func main() {
 		_, numb, err := galera.GetNumbNodes(db)
 		if err != nil {
 			slackApp.PayloadSlack("\n### [FATAL] Nodes ###\nImpossible to get total nodes" + err.Error() + " total Nodes " + string(nbSrv) + " Nodes get " + string(numb))
+			log.Fatalf("Impossible to get total nodes %v", err)
 		}	/*else {
 			log.Printf("Number of Nodes counts : %v", numb)
 		}*/
@@ -89,6 +94,7 @@ func main() {
 	err = controller.CheckNodesCount(mTotalNodes, nbSrv)
 	if err != nil {
 		slackApp.PayloadSlack("\n### [FATAL] Nodes ###\nNodes count mismatched" + err.Error())
+		log.Fatalf("Nodes count mismatched ! %v", err)
 	}
 
 	// Get Cluster Status
@@ -98,6 +104,7 @@ func main() {
 		_, status, err := galera.GetClusterStatus(db)
 		if err != nil {
 			slackApp.PayloadSlack("\n### [FATAL] STATUS ###\nImpossible to get cluster status " + err.Error())
+			log.Fatalf("Impossible to get cluster status %v", err)
 		} /*else {
 			log.Printf("%v status : %v", srvName, status)
 		}*/
@@ -108,6 +115,7 @@ func main() {
 	err = controller.CheckClusterStatus(mStatusNodes)
 	if err != nil {
 		slackApp.PayloadSlack("\n" + err.Error())
+		log.Printf("Node not primary %v", err)
 	}
 
 	mNodesReady := map[string]string{}
@@ -116,6 +124,7 @@ func main() {
 		_, values, err := galera.GetReady(db)
 		if err != nil {
 			slackApp.PayloadSlack("\n### [FATAL] Nodes ###\nImpossible to get Nodes wsrep_ready " + err.Error())
+			log.Fatalf("Impossible to get wsrep_ready %v", err)
 		} /*else {
 			log.Printf("%v is ready : [%v]", srvName, values)
 		}*/
@@ -126,6 +135,7 @@ func main() {
 	err = controller.CheckON(mNodesReady)
 	if err != nil {
 		slackApp.PayloadSlack("\n" + err.Error())
+		log.Printf("Nodes not ready %v", err)
 	}
 
 	// Get Nodes wsrep_connected
@@ -134,6 +144,7 @@ func main() {
 		_, values, err := galera.GetConnected(db)
 		if err != nil {
 			slackApp.PayloadSlack("\n### [FATAL] Nodes ###\nImpossible to get Nodes wsrep_connected " + err.Error())
+			log.Fatalf("Impossible to get wsrep_connected %v", err)
 		} /*else {
 			log.Printf("%v is connected : [%v]", srvName, values)
 		}*/
@@ -152,9 +163,11 @@ func main() {
 		_, values, err := galera.GetQueueAvg(db)
 		if err != nil {
 			slackApp.PayloadSlack("\nImpossible to get average replication " + err.Error())
+			log.Printf("Impossible to get average rep %v", err)
 		}
 		if Float64frombytes(values) >= 0.100000 {
 					slackApp.PayloadSlack("\n### [WARNING] Average Replication ###\nAverage on " + srvName + ":" + string(values))
+					log.Printf("Replication warning on %s %s", srvName, string(values))
 			}
 	}
 
