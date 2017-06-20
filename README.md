@@ -1,13 +1,41 @@
-# Galera_Monitoring
-Golang cluster mariaDB/Mysql monitoring
+# Galera Monitoring
+This program is a Golang cluster mariaDB/Mysql Monitoring.\
+Alerts are sending on Slack Channel.
 
-### Notes
+##### Notes
 Currently still working on it.
 
-### Exemple 
+  * [Installation](#installation)
+  * [Exemple](#exemple)
+  * [Docker](#docker)
+    * [Exemple](#docker-run)
+  
+
+### Installation
+* Run the following :
+```
+> go get https://github.com/F00b4rch/Galera_Monitoring
+```
+* Create you SlackApp : https://api.slack.com/apps/
+* Add feature Incoming Webhooks
+* Put your WebhookURL/Username/Channel inside slackApp/payload.go
+```
+	// Add here your webhookurl
+	webhookUrl := "https://hooks.slack.com/services/your_key"
+
+	payload := slack.Payload{
+		Text:    text,
+		Username: "Galera_alerte",
+		Channel:  "#infra",
 
 ```
-go run main.go
+
+
+### Exemple
+
+This exemple will show you normal output only if you **uncomment** fmt in import() and good parts in the code.
+```
+> go run main.go
 
 ### Version ####
 2017/06/16 14:19:48 Serveur n1 - version 5.6.35-1xenial
@@ -38,13 +66,14 @@ go run main.go
 2017/06/16 14:19:48 Average on n1 : 0.100000
 ```
 
+
 ## Docker
 
 You can try it with 3 Galera Docker containers.
 
 Please refer to [Galera Documentation](http://galeracluster.com/2015/05/getting-started-galera-with-docker-par-1/)
 
-#### Exemple :
+#### Docker-run :
 ```
 $ sudo docker run --detach=true --name node1 -h node1 erkules/galera:latest --wsrep-cluster-name=local-test --wsrep-cluster-address=gcomm://
 $ sudo docker run --detach=true --name node2 -h node2 --link node1:node1 erkules/galera:latest --wsrep-cluster-name=local-test --wsrep-cluster-address=gcomm://node1
