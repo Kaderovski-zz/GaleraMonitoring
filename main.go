@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"encoding/binary"
-
+	//"fmt"
 	"github.com/F00b4rch/Galera_Monitoring/controller"
 	"github.com/F00b4rch/Galera_Monitoring/galera"
 	"github.com/F00b4rch/Galera_Monitoring/slackApp"
