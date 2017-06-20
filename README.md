@@ -14,7 +14,7 @@ Currently still working on it.
 ### Installation
 * Run the following :
 ```
-> go get https://github.com/F00b4rch/Galera_Monitoring
+> go get https://github.com/F00b4rch/GaleraMonitoring
 ```
 * Create you SlackApp : https://api.slack.com/apps/
 * Add feature Incoming Webhooks
